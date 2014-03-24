@@ -92,5 +92,6 @@
 /// Finish the page
 
     echo $OUTPUT->footer($course);
+	echo "michael";
 
 ?>
