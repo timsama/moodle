@@ -46,27 +46,15 @@ define('ALL_EVENTS', 1023);
 global $STATUSCODES;
 global $STATUSKEYS;
 $STATUSCODES = array(POSTED => 'posted', 
-                    OPEN => 'open', 
                     RESOLVING => 'resolving', 
-                    WAITING => 'waiting', 
-                    RESOLVED => 'resolved', 
                     ABANDONNED => 'abandonned',
-                    TRANSFERED => 'transfered',
-                    TESTING => 'testing',
-                    PUBLISHED => 'published',
-                    VALIDATED => 'validated',
+                    PUBLISHED => 'published'
                     );
 
 $STATUSKEYS = array(POSTED => get_string('posted', 'tracker'), 
-                    OPEN => get_string('open', 'tracker'), 
-                    RESOLVING => get_string('resolving', 'tracker'), 
-                    WAITING => get_string('waiting', 'tracker'), 
-                    RESOLVED => get_string('resolved', 'tracker'), 
+                    RESOLVING => get_string('resolving', 'tracker'),  
                     ABANDONNED => get_string('abandonned', 'tracker'),
-                    TRANSFERED => get_string('transfered', 'tracker'),
-                    TESTING => get_string('testing', 'tracker'),
-                    PUBLISHED => get_string('published', 'tracker'),
-                    VALIDATED => get_string('validated', 'tracker'),
+                    PUBLISHED => get_string('published', 'tracker')
                     );
 
 /**
