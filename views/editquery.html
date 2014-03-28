@@ -9,17 +9,19 @@
 * A form for updating a stored query
 */
 
-echo $OUTPUT->heading(get_string('editquery', 'tracker'));
-$OUTPUT->box_start('center', '100%', '', '', 'generalbox', 'bugreport');
-$checkdate = ($form->checkdate) ? "checked=\"checked\"" : '' ;
-?>
-<center>
+	echo $OUTPUT->heading(get_string('editquery', 'tracker'));
+	$OUTPUT->box_start('center', '100%', '', '', 'generalbox', 'bugreport');
+	$checkdate = ($form->checkdate) ? "checked=\"checked\"" : '' ;
+	
+	echo '<center>';
 
+?>
 <!-- Print Query Description -->
 
 <form name="editqueryform" action="view.php" method="post">
 <input type="hidden" name="what" value="updatequery">
 <input type="hidden" name="queryid" value="<?php p($form->queryid) ?>">
+<input type="hidden" name="view" value="profile">
 <input type="hidden" name="screen" value="myqueries">
 <input type="hidden" name="id" value="<?php p($cm->id) ?>">
 
@@ -81,10 +83,11 @@ var datereporteditems = ['day','month','year'];
 </table>
 </form>
 <?php
-$OUTPUT->box_end();
-$nohtmleditorneeded = true;
-?>
-</center>
-<script type="text/javascript">
-lockoptions('editqueryform','checkdate', datereporteditems);
-</script>
+
+	echo $OUTPUT->box_end();
+
+	$nohtmleditorneeded = true;
+	echo '</center>';
+	echo '<script type="text/javascript">';
+	echo 'lockoptions(\'editqueryform\',\'checkdate\', datereporteditems);';
+	echo '</script>';
