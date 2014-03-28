@@ -10,6 +10,7 @@
 */
 
 include_once('classes/trackercategorytype/trackerelement.class.php');
+require_once($CFG->dirroot.'/mod/tracker/locallib.php');
 
 /**
  * List of features supported in tracker module
@@ -52,7 +53,26 @@ function tracker_add_instance($tracker, $mform) {
 		$tracker->subtrackers = implode(',', $tracker->subtrackers);
 	}
 
-    return $DB->insert_record('tracker', $tracker);
+	$tracker->id = $DB->insert_record('tracker', $tracker);
+				
+	$context = context_module::instance($tracker->coursemodule);
+
+	// make some presets depending on tracker type
+	if ($tracker->supportmode != 'customized'){
+		tracker_setup_role_overrides($tracker, $context);
+		tracker_preset_states($tracker);
+		tracker_preset_params($tracker);
+		$DB->set_field('tracker', 'enabledstates', $tracker->enabledstates, array('id' => $tracker->id));
+	} else {
+		tracker_clear_role_overrides($context);
+	}
+
+	if (empty($tracker->ticketprefix)){
+		$tracker->ticketprefix = 'TRK'.$tracker->id.'_';
+		$DB->set_field('tracker', 'ticketprefix', $tracker->ticketprefix, array('id' => $tracker->id));
+	}
+
+    return $tracker->id;
 }
 
 /**
@@ -66,8 +86,24 @@ function tracker_update_instance($tracker, $mform) {
     $tracker->timemodified = time();
     $tracker->id = $tracker->instance;
 
-	if (is_array($tracker->subtrackers)){
+	if (is_array(@$tracker->subtrackers)){
 		$tracker->subtrackers = implode(',', $tracker->subtrackers);
+	}
+
+	$context = context_module::instance($tracker->coursemodule);
+
+	if ($tracker->supportmode != 'customized'){
+		tracker_setup_role_overrides($tracker, $context);
+		tracker_preset_states($tracker);
+		tracker_preset_params($tracker);
+		$DB->set_field('tracker', 'enabledstates', $tracker->enabledstates, array('id' => $tracker->id));
+	} else {
+		tracker_clear_role_overrides($context);
+	}
+
+	if (empty($tracker->ticketprefix)){
+		$tracker->ticketprefix = 'TRK'.$tracker->id.'_';
+		$DB->set_field('tracker', 'ticketprefix', $tracker->ticketprefix, array('id' => $tracker->id));
 	}
 
     return $DB->update_record('tracker', $tracker);
@@ -85,6 +121,12 @@ function tracker_delete_instance($id) {
         return false;
     }
 
+    if (!$cm = get_coursemodule_from_instance('tracker', $tracker->id)) {
+        return false;
+    }
+
+    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+
     $result = true;
 
     /// Delete any dependent records here 
@@ -96,6 +138,10 @@ function tracker_delete_instance($id) {
     $DB->delete_records('tracker_issueattribute', array('trackerid' => "$tracker->id"));
     $DB->delete_records('tracker_issuecc', array('trackerid' => "$tracker->id"));
     $DB->delete_records('tracker_issuecomment', array('trackerid' => "$tracker->id"));
+
+	// delete all files attached to this context
+    $fs = get_file_storage();
+    $fs->delete_area_files($context->id);
 
     return $result;
 }
@@ -131,13 +177,13 @@ function tracker_print_recent_activity($course, $isteacher, $timestart) {
 	
     $sql = "
         SELECT
-            t.name,
-            t.ticketprefix,
             ti.id,
             ti.trackerid,
             ti.summary,
             ti.reportedby,
-            ti.datereported
+            ti.datereported,
+            t.name,
+            t.ticketprefix
          FROM
             {tracker} t,
             {tracker_issue} ti
@@ -159,6 +205,84 @@ function tracker_print_recent_activity($course, $isteacher, $timestart) {
     }
     
     return false;  //  True if anything was printed, otherwise false 
+}
+
+/**
+ * Print an overview of all trackers
+ * for the courses.
+ *
+ * @param mixed $courses The list of courses to print the overview for
+ * @param array $htmlarray The array of html to return
+ */
+function tracker_print_overview($courses, &$htmlarray) {
+    global $USER, $CFG, $DB;
+    
+    if (empty($courses) || !is_array($courses) || count($courses) == 0) {
+        return array();
+    }
+
+    if (!$trackers = get_all_instances_in_courses('tracker', $courses)) {
+        return;
+    }
+
+    $strtracker = get_string('modulename', 'tracker');
+
+	foreach($trackers as $tracker){
+
+        $str = '<div class="tracker overview">';
+        $str .= '<div class="name">'.$strtracker. ': '.
+               '<a '.($tracker->visible ? '':' class="dimmed"').
+               'title="'.$strtracker.'" href="'.$CFG->wwwroot.
+               '/mod/tracker/view.php?id='.$tracker->coursemodule.'">'.
+               format_string($tracker->name).'</a></div>';
+
+        $context = context_module::instance($tracker->coursemodule);
+        if (has_capability('mod/tracker:develop', $context)) {
+
+            // count how many assigned
+            $sql = "
+            	SELECT DISTINCT
+            		i.id, i.id
+            	FROM
+            		{tracker_issue} i
+            	LEFT JOIN
+            		{tracker_issueownership} io
+            	ON
+            		io.issueid = i.id
+            	WHERE
+            		i.trackerid = ? AND
+            		assignedto = ? AND
+            		(status = ".POSTED." OR
+            		status = ".OPEN." OR
+            		status = ".RESOLVING.") AND
+            		io.id IS NULL
+            ";
+            $yours = $DB->get_records_sql($sql, array($tracker->id, $USER->id));
+            
+            if ($yours) {
+                $link = new moodle_url('/mod/tracker/view.php', array('id' => $tracker->coursemodule, 'view' => 'view', 'screen' => 'mywork'));
+                $str .= '<div class="details"><a href="'.$link.'">'.get_string('issuestowatch', 'tracker', count($yours)).'</a></div>';
+            }
+		}
+
+        if (has_capability('mod/tracker:manage', $context)) {
+
+            // count how many unassigned
+            $unassigned = $DB->get_records('tracker_issue', array('trackerid' => $tracker->id, 'assignedto' => 0, 'status' => POSTED));
+            
+            if ($unassigned) {
+                $link = new moodle_url('/mod/tracker/view.php', array('id' => $tracker->coursemodule, 'view' => 'view', 'screen' => 'mywork'));
+                $str .= '<div class="details"><a href="'.$link.'">'.get_string('issuestoassign', 'tracker', count($unassigned)).'</a></div>';
+            }
+		}
+    	$str .= '</div>';
+
+	    if (empty($htmlarray[$tracker->course]['tracker'])) {
+	        $htmlarray[$tracker->course]['tracker'] = $str;
+	    } else {
+	        $htmlarray[$tracker->course]['tracker'] .= $str;
+	    }
+	}
 }
 
 /**
@@ -323,4 +447,447 @@ function tracker_uninstall(){
     }
     
     return $return;
+}
+
+function tracker_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload) {
+    global $CFG, $DB;
+	
+    if ($context->contextlevel != CONTEXT_MODULE) {
+        return false;
+    }
+	
+    require_course_login($course, true, $cm);
+    
+    $fileareas = array('issuedescription', 'issueresolution', 'issueattribute', 'issuecomment');
+    if (!in_array($filearea, $fileareas)) {
+        return false;
+    }
+
+    $itemid = (int)array_shift($args);
+
+    if (!$tracker = $DB->get_record('tracker', array('id' => $cm->instance))) {
+        return false;
+    }
+
+    $fs = get_file_storage();
+    $relativepath = implode('/', $args);
+    $fullpath = "/$context->id/mod_tracker/$filearea/$itemid/$relativepath";
+    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+        return false;
+    }
+
+    // finally send the file
+    send_stored_file($file, 0, 0, false); // download MUST be forced - security!
+}
+
+/**
+* Adds some overrides that invert role to profile mapping. This is done by role archetype 
+* to help custom roles to adopt suitable behaviour.
+*/
+function tracker_setup_role_overrides(&$tracker, $context){
+	global $DB, $USER;
+
+	tracker_clear_role_overrides($context);
+	
+	assert(!$DB->get_records('role_capabilities', array('contextid' => $context->id)));
+
+	$time = time();
+
+	if ($tracker->supportmode == 'taskspread'){
+		$overrides = array(
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'teacher',
+				'capability' => 'mod/tracker:report',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'editingteacher',
+				'capability' => 'mod/tracker:report',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'teacher',
+				'capability' => 'mod/tracker:viewallissues',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'editingteacher',
+				'capability' => 'mod/tracker:viewallissues',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'teacher',
+				'capability' => 'mod/tracker:seeissues',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'editingteacher',
+				'capability' => 'mod/tracker:seeissues',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'teacher',
+				'capability' => 'mod/tracker:comment',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'editingteacher',
+				'capability' => 'mod/tracker:comment',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'teacher',
+				'capability' => 'mod/tracker:managepriority',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'editingteacher',
+				'capability' => 'mod/tracker:managepriority',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'teacher',
+				'capability' => 'mod/tracker:develop',
+				'permission' => CAP_PREVENT,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'editingteacher',
+				'capability' => 'mod/tracker:develop',
+				'permission' => CAP_PREVENT,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'teacher',
+				'capability' => 'mod/tracker:resolve',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'editingteacher',
+				'capability' => 'mod/tracker:resolve',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'student',
+				'capability' => 'mod/tracker:develop',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'student',
+				'capability' => 'mod/tracker:report',
+				'permission' => CAP_PREVENT,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'student',
+				'capability' => 'mod/tracker:comment',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'student',
+				'capability' => 'mod/tracker:managepriority',
+				'permission' => CAP_PREVENT,
+			),
+		);
+	} elseif ($tracker->supportmode == 'bugtracker'){
+		$overrides = array(
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'teacher',
+				'capability' => 'mod/tracker:report',
+				'permission' => CAP_PREVENT,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'editingteacher',
+				'capability' => 'mod/tracker:report',
+				'permission' => CAP_PREVENT,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'teacher',
+				'capability' => 'mod/tracker:viewallissues',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'editingteacher',
+				'capability' => 'mod/tracker:viewallissues',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'teacher',
+				'capability' => 'mod/tracker:seeissues',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'editingteacher',
+				'capability' => 'mod/tracker:seeissues',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'teacher',
+				'capability' => 'mod/tracker:comment',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'editingteacher',
+				'capability' => 'mod/tracker:comment',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'teacher',
+				'capability' => 'mod/tracker:develop',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'editingteacher',
+				'capability' => 'mod/tracker:develop',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'teacher',
+				'capability' => 'mod/tracker:resolve',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'editingteacher',
+				'capability' => 'mod/tracker:resolve',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'student',
+				'capability' => 'mod/tracker:develop',
+				'permission' => CAP_PREVENT,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'student',
+				'capability' => 'mod/tracker:report',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'student',
+				'capability' => 'mod/tracker:comment',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'student',
+				'capability' => 'mod/tracker:seeissues',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'student',
+				'capability' => 'mod/tracker:viewallissues',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'student',
+				'capability' => 'mod/tracker:resolve',
+				'permission' => CAP_ALLOW,
+			),
+		);
+	} elseif($tracker->supportmode == 'ticketting') { // User individual support
+		$overrides = array(
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'teacher',
+				'capability' => 'mod/tracker:report',
+				'permission' => CAP_PREVENT,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'editingteacher',
+				'capability' => 'mod/tracker:report',
+				'permission' => CAP_PREVENT,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'teacher',
+				'capability' => 'mod/tracker:viewallissues',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'editingteacher',
+				'capability' => 'mod/tracker:viewallissues',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'teacher',
+				'capability' => 'mod/tracker:seeissues',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'editingteacher',
+				'capability' => 'mod/tracker:seeissues',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'teacher',
+				'capability' => 'mod/tracker:comment',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'editingteacher',
+				'capability' => 'mod/tracker:comment',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'teacher',
+				'capability' => 'mod/tracker:develop',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'editingteacher',
+				'capability' => 'mod/tracker:develop',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'teacher',
+				'capability' => 'mod/tracker:resolve',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'editingteacher',
+				'capability' => 'mod/tracker:resolve',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'student',
+				'capability' => 'mod/tracker:develop',
+				'permission' => CAP_PREVENT,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'student',
+				'capability' => 'mod/tracker:report',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'student',
+				'capability' => 'mod/tracker:comment',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'student',
+				'capability' => 'mod/tracker:viewallissues',
+				'permission' => CAP_PREVENT,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'student',
+				'capability' => 'mod/tracker:seeissues',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'student',
+				'capability' => 'mod/tracker:managepriority',
+				'permission' => CAP_ALLOW,
+			),
+			array(
+				'contextid' => $context->id,
+				'rolearchetype' => 'student',
+				'capability' => 'mod/tracker:resolve',
+				'permission' => CAP_ALLOW,
+			),
+		);
+	}
+	
+	foreach ($overrides as $ov){
+
+		$overrideobj = (object) $ov;
+		
+		$roles = $DB->get_records('role', array('archetype' => $overrideobj->rolearchetype));
+
+		foreach($roles as $r){
+			$overrideobj->roleid = $r->id;			
+			$overrideobj->timemodified = $time;
+			$overrideobj->modifierid = $USER->id;		
+			$DB->insert_record('role_capabilities', $overrideobj);
+		}
+	}
+}
+
+/**
+* Remove all overrides on this context
+*
+*/
+function tracker_clear_role_overrides($context){
+	global $DB;
+	
+	$DB->delete_records('role_capabilities', array('contextid' => $context->id));
+}
+
+function tracker_preset_states(&$tracker){
+
+	if ($tracker->supportmode == 'taskspread'){
+		$tracker->enabledstates = ENABLED_OPEN | ENABLED_RESOLVED | ENABLED_WAITING | ENABLED_ABANDONNED;
+	} elseif ($tracker->supportmode == 'bugtracker'){
+		$tracker->enabledstates = ENABLED_ALL;
+	} elseif ($tracker->supportmode == 'ticketting'){
+		$tracker->enabledstates = ENABLED_OPEN | ENABLED_RESOLVING | ENABLED_RESOLVED | ENABLED_WAITING | ENABLED_ABANDONNED | ENABLED_VALIDATED;
+	} else {
+		if (is_array(@$tracker->stateprofile)){
+			$tracker->enabledstates = array_reduce($tracker->stateprofile, 'tracker_ror', 0);
+		}	
+	}
+}
+
+function tracker_preset_params(&$tracker){
+	global $DB;
+	
+	if ($tracker->supportmode == 'taskspread'){
+		$tracker->thanksmessage = get_string('message_taskspread', 'tracker');
+		$tracker->defaultassignee = 0;
+	} elseif ($tracker->supportmode == 'bugtracker'){
+		$tracker->thanksmessage = get_string('message_bugtracker', 'tracker');
+	} elseif ($tracker->supportmode == 'ticketting'){
+		if ($tracker->defaultassignee){
+			$defaultassignee = $DB->get_record('user', array('id' => $tracker->defaultassignee), 'id, firstname, lastname');
+			$tracker->thanksmessage = get_string('message_ticketting_preassigned', 'tracker', fullname($defaultassignee));
+		} else {
+			$tracker->thanksmessage = get_string('message_ticketting', 'tracker');
+		}
+	}
 }
