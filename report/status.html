@@ -3,13 +3,13 @@ echo $OUTPUT->heading(get_string('reports', 'tracker'), 1);
 echo $OUTPUT->heading(get_string('status', 'tracker'), 2);
 
 $STATUSKEYS = array(POSTED => get_string('posted', 'tracker'), 
-                    RESOLVING => get_string('resolving', 'tracker'), 
+                    RESOLVED => get_string('resolved', 'tracker'), 
                     PUBLISHED => get_string('published', 'tracker'), 
                     ABANDONNED => get_string('abandonned', 'tracker'));
 
 $STATUSCODES = array(POSTED => 'posted', 
-                    RESOLVING => 'resolving', 
                     PUBLISHED => 'published', 
+                    RESOLVED => 'resolved', 
                     ABANDONNED => 'abandonned');
 
 $tickets = tracker_get_stats($tracker);

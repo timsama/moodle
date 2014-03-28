@@ -18,15 +18,9 @@ require_once($CFG->dirroot.'/mod/tracker/mailtemplatelib.php');
 
 // statusses
 define('POSTED', 0);
-define('OPEN', 1);
-define('RESOLVING', 2);
-define('WAITING', 3);
-define('RESOLVED', 4);
-define('ABANDONNED', 5);
-define('TRANSFERED', 6);
-define('TESTING', 7);
-define('PUBLISHED', 8);
-define('VALIDATED', 9);
+define('RESOLVED', 1);
+define('ABANDONNED', 2);
+define('PUBLISHED', 3);
 
 // states && eventmasks
 define('EVENT_POSTED', 0);
@@ -46,13 +40,13 @@ define('ALL_EVENTS', 1023);
 global $STATUSCODES;
 global $STATUSKEYS;
 $STATUSCODES = array(POSTED => 'posted', 
-                    RESOLVING => 'resolving', 
+                    RESOLVED => 'resolved', 
                     ABANDONNED => 'abandonned',
                     PUBLISHED => 'published'
                     );
 
 $STATUSKEYS = array(POSTED => get_string('posted', 'tracker'), 
-                    RESOLVING => get_string('resolving', 'tracker'),  
+                    RESOLVED => get_string('resolved', 'tracker'),  
                     ABANDONNED => get_string('abandonned', 'tracker'),
                     PUBLISHED => get_string('published', 'tracker')
                     );
