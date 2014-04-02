@@ -50,6 +50,11 @@ $alltickets = $DB->count_records('tracker_issue', array('trackerid' => $tracker-
 			<td width="30%" align="right"><?php echo 0 + @$tickets[ABANDONNED] ?></td>
 			<td width="30%" align="right"><?php echo ($alltickets) ? sprintf("%2d", ((0 + @$tickets[ABANDONNED])/$alltickets) * 100).' %': '0 % '; ?></td>
 		</tr>
+		<tr>
+			<td width="40%" align="left" class="status_transfered"><?php echo $STATUSKEYS[TRANSFERED] ?></td>
+			<td width="30%" align="right"><?php echo 0 + @$tickets[TRANSFERED] ?></td>
+			<td width="30%" align="right"><?php echo ($alltickets) ? sprintf("%2d", ((0 + @$tickets[TRANSFERED])/$alltickets) * 100).' %' : '0 % '; ?></td>
+		</tr>
 		</table>
 
 		</td>
