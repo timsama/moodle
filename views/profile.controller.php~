@@ -160,7 +160,7 @@ elseif ($action == 'saveprefs'){
     $pref->trackerid = $tracker->id;
     $pref->userid = $USER->id;
     $pref->name = 'eventmask';
-    $pref->value = $resolved * EVENT_RESOLVED + $abandonned * EVENT_ABANDONNED + $oncomment * ON_COMMENT + $published * EVENT_PUBLISHED;
+    $pref->value = $open * EVENT_OPEN + $resolving * EVENT_RESOLVING + $waiting * EVENT_WAITING + $resolved * EVENT_RESOLVED + $abandonned * EVENT_ABANDONNED + $oncomment * ON_COMMENT + $testing * EVENT_TESTING + $published * EVENT_PUBLISHED;
     if (!$oldpref = $DB->get_record('tracker_preferences', array('trackerid' => $tracker->id, 'userid' => $USER->id, 'name' => 'eventmask'))){
         if (!$DB->insert_record('tracker_preferences', $pref)){
             print_error('errorcannotsaveprefs', 'tracker');
