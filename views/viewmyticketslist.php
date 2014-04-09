@@ -256,14 +256,14 @@ if (!empty($issues)){
         if (!empty($tracker->parent)){
             $transfer = ($issue->status == TRANSFERED) ? tracker_print_transfer_link($tracker, $issue) : '' ;
             if (has_capability('mod/tracker:viewpriority', $context) && !$resolved){
-                $ticketpriority = ($issue->status < RESOLVED || $issue->status == TESTING) ? $maxpriority - $issue->resolutionpriority + 1 : '' ;
+                $ticketpriority = ($issue->status < RESOLVED) ? $maxpriority - $issue->resolutionpriority + 1 : '' ;
                 $dataset = array($ticketpriority, $issuenumber, $summary.' '.$solution, $datereported, $assignedto, $status, 0 + $issue->watches, $transfer, $actions);
             } else {
                 $dataset = array($issuenumber, $summary.' '.$solution, $datereported, $assignedto, $status, 0 + $issue->watches, $transfer, $actions);
             }
         } else {
             if (has_capability('mod/tracker:viewpriority', $context) && !$resolved){
-                $ticketpriority = ($issue->status < RESOLVED || $issue->status == TESTING) ? $maxpriority - $issue->resolutionpriority + 1 : '' ;
+                $ticketpriority = ($issue->status < RESOLVED) ? $maxpriority - $issue->resolutionpriority + 1 : '' ;
                 $dataset = array($ticketpriority, $issuenumber, $summary.' '.$solution, $datereported, $assignedto, $status, 0 + $issue->watches, $actions);
             } else {
                 $dataset = array($issuenumber, $summary.' '.$solution, $datereported, $assignedto, $status, 0 + $issue->watches, $actions);
