@@ -17,16 +17,9 @@ if (!defined('MOODLE_INTERNAL')) {
 
 include_once $CFG->libdir.'/tablelib.php';
 
-$STATUSKEYS = array(POSTED => get_string('posted', 'tracker'), 
-                    OPEN => get_string('open', 'tracker'), 
-                    RESOLVING => get_string('resolving', 'tracker'), 
-                    WAITING => get_string('waiting', 'tracker'), 
-                    TESTING => get_string('testing', 'tracker'), 
-                    VALIDATED => get_string('validated', 'tracker'), 
-                    PUBLISHED => get_string('published', 'tracker'), 
-                    RESOLVED => get_string('resolved', 'tracker'), 
-                    ABANDONNED => get_string('abandonned', 'tracker'),
-                    TRANSFERED => get_string('transfered', 'tracker'));
+$STATUSKEYS = array(PUBLISHED => get_string('published', 'tracker'), 
+                    RESOLVED => get_string('resolved', 'tracker'),
+                    ABANDONNED => get_string('abandonned', 'tracker'));
 
 /// get search engine related information
 // fields can come from a stored query,or from the current query in the user's client environement cookie
@@ -46,7 +39,7 @@ if ($page <= 0){
 }
 
 if (isset($searchqueries)){
-    /* SEARCH DEBUG 
+    /* SEARCH DEBUG
     $strsql = str_replace("\n", "<br/>", $searchqueries->count);
     $strsql = str_replace("\t", "&nbsp;&nbsp;&nbsp;", $strsql);
     echo "<div align=\"left\"> <b>count using :</b> ".$strsql." <br/>";
@@ -58,7 +51,7 @@ if (isset($searchqueries)){
     $numrecords = $DB->count_records_sql($searchqueries->count);
 } else {
 	$singletrackerclause = (empty($alltracks)) ? " AND i.trackerid = {$tracker->id} " : '' ;
-	
+
     if ($resolved){
         $resolvedclause = " AND
            (status = ".RESOLVED." OR
@@ -72,46 +65,46 @@ if (isset($searchqueries)){
     }
 
     $sql = "
-        SELECT 
-            i.id, 
-            i.summary, 
-            i.datereported, 
-            i.reportedby, 
+        SELECT
+            i.id,
+            i.summary,
+            i.datereported,
+            i.reportedby,
             i.status,
             t.name,
             t.ticketprefix,
             i.resolutionpriority,
             COUNT(ic.issueid) AS watches
-        FROM 
+        FROM
             {tracker_issue} i
         JOIN
             {tracker} t
         ON
         	t.id = i.trackerid
         LEFT JOIN
-            {tracker_issuecc} ic 
+            {tracker_issuecc} ic
         ON
             ic.issueid = i.id
-        WHERE 
-            i.assignedto = ? 
+        WHERE
+            i.assignedto = ?
             {$singletrackerclause}
             $resolvedclause
-        GROUP BY 
+        GROUP BY
             i.id,
-            i.summary, 
-            i.datereported, 
-            i.reportedby, 
+            i.summary,
+            i.datereported,
+            i.reportedby,
             i.status,
             i.resolutionpriority
     ";
 
     $sqlcount = "
-        SELECT 
+        SELECT
             COUNT(*)
-        FROM 
+        FROM
             {tracker_issue} i
-        WHERE 
-            i.assignedto = ? 
+        WHERE
+            i.assignedto = ?
             {$singletrackerclause}
             $resolvedclause
     ";
@@ -135,14 +128,14 @@ if (isset($searchqueries)){
     </tr>
 <?php
 }
-?>      
+?>
 </table>
 </center>
 <form name="manageform" action="view.php" method="post">
 <input type="checkbox" name="alltracks" value="1" <?php if ($alltracks) echo "checked=\"checked\"" ?> /> <?php echo get_string('alltracks', 'tracker') ?>
 <input type="hidden" name="id" value="<?php p($cm->id) ?>" />
 <input type="hidden" name="what" value="updatelist" />
-<?php       
+<?php
 
 /// define table object
 $prioritystr = get_string('priorityid', 'tracker');
@@ -241,7 +234,7 @@ if (!empty($issues)){
             }
             $managersmenu[$USER->id] = fullname($USER);
         } else {
-            $status = $STATUSKEYS[0 + $issue->status]; 
+            $status = $STATUSKEYS[0 + $issue->status];
         }
         $reporteruser = $DB->get_record('user', array('id' => $issue->reportedby));
         $reporter = fullname($reporteruser);
@@ -266,14 +259,14 @@ if (!empty($issues)){
         } else {
             $dataset = array($issue->resolutionpriority, $issuenumber, $summary.' '.$solution, $datereported, $reporter, $status, 0 + $issue->watches, $actions);
         }
-        $table->add_data($dataset);     
+        $table->add_data($dataset);
     }
     $table->print_html();
 } else {
 	echo '<br/>';
 	echo '<br/>';
 	echo '<br/>';
-    notice(get_string('notickets', 'tracker'), "view.php?id=$cm->id"); 
+    notice(get_string('notickets', 'tracker'), "view.php?id=$cm->id");
 }
 
 if (has_capability('mod/tracker:manage', $context) || has_capability('mod/tracker:resolve', $context)){
