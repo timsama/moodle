@@ -226,28 +226,19 @@
 	    }
 	    if ($result != -1){
 	        switch($screen){
-<<<<<<< HEAD
 	            case 'mytickets':
 	                $resolved = 1;
 	                include "views/viewmyticketslist.php";
 	                break;
 	            case 'mywork':
 	                $resolved = 1;
-=======
-	            case 'mytickets': 
-	                $resolved = 0;
-	                include "views/viewmyticketslist.php";
-	                break;
-	            case 'mywork': 
-	                $resolved = 0;
->>>>>>> FETCH_HEAD
 	                include "views/viewmyassignedticketslist.php";
 	                break;
 	            case 'browse':
 	                if (!has_capability('mod/tracker:viewallissues', $context)){
 	                    print_error ('errornoaccessallissues', 'tracker');
 	                } else {
-	                    $resolved = 0;
+	                    $resolved = 1;
 	                    include "views/viewissuelist.php";
 	                }
 	                break;
