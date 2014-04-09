@@ -3,19 +3,10 @@ echo $OUTPUT->heading(get_string('reports', 'tracker'), 1);
 echo $OUTPUT->heading(get_string('status', 'tracker'), 2);
 
 $STATUSCODES = array(POSTED => 'posted', 
-		    PUBLISHED => 'published',
-                    RESOLVED => 'resolved');
-
-# array(POSTED => 'posted', 
-#                    OPEN => 'open', 
-#                    RESOLVING => 'resolving', 
-#                    WAITING => 'waiting', 
-#                    TESTING => 'testing', 
-#                    PUBLISHED => 'published', 
-#                    RESOLVED => 'resolved', 
-#                    ABANDONNED => 'abandonned',
-#                    TRANSFERED => 'transfered',
-#					VALIDATED => 'validated');
+                    RESOLVED => 'resolved', 
+                    ABANDONNED => 'abandonned',
+                    PUBLISHED => 'published'
+                    );
 
 $tickets = tracker_get_stats($tracker);
 $statsbyassignee = tracker_get_stats_by_user($tracker, 'assignedto');

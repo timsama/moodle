@@ -17,8 +17,9 @@ if (!defined('MOODLE_INTERNAL')) {
 
 include_once $CFG->libdir.'/tablelib.php';
 
-$STATUSKEYS = array(PUBLISHED => get_string('published', 'tracker'),
-                    RESOLVED => get_string('resolved', 'tracker'),
+$STATUSKEYS = array(POSTED => get_string('posted', 'tracker'), 
+                    RESOLVED => get_string('resolved', 'tracker'), 
+                    PUBLISHED => get_string('published', 'tracker'), 
                     ABANDONNED => get_string('abandonned', 'tracker'));
 
 /// get search engine related information
