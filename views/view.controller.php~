@@ -419,10 +419,9 @@ elseif ($action == 'distribute'){
 		$issue->assignedto = $newtracker->defaultassignee;
 		$issue->status = 0; // reset status to posted so new assignee has to open it again
 		// only notify if real change
-	    #if ($tracker->allownotifications && ($oldassingedto != $issue->assignedto) && $newtracker->defaultassignee){
-	    #    tracker_notifyccs_changeownership($issue->id, $newtracker);
-	    #}
-	# commenting these lines should help stop ownership change email notifications
+	    if ($tracker->allownotifications && ($oldassingedto != $issue->assignedto) && $newtracker->defaultassignee){
+	        tracker_notifyccs_changeownership($issue->id, $newtracker);
+	    }
 
     	// log state change
 		if ($oldstatus != $issue->status){

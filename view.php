@@ -138,7 +138,7 @@
 	/// Print tabs with options for user
 	$rows[0][] = new tabobject('reportanissue', "view.php?id={$cm->id}&amp;view=reportanissue", get_string('newissue', 'tracker'));
 	$rows[0][] = new tabobject('view', "view.php?id={$cm->id}&amp;view=view", get_string('view', 'tracker').' ('.$totalissues.' '.get_string('issues','tracker').')');
-	//$rows[0][] = new tabobject('resolved', "view.php?id={$cm->id}&amp;view=resolved", get_string('resolvedplural', 'tracker').' ('.$totalresolvedissues.' '.get_string('issues','tracker').')');
+	$rows[0][] = new tabobject('resolved', "view.php?id={$cm->id}&amp;view=resolved", get_string('resolvedplural', 'tracker').' ('.$totalresolvedissues.' '.get_string('issues','tracker').')');
 	$rows[0][] = new tabobject('profile', "view.php?id={$cm->id}&amp;view=profile", get_string('profile', 'tracker'));
 	if (has_capability('mod/tracker:viewreports', $context)){
 		$rows[0][] = new tabobject('reports', "view.php?id={$cm->id}&amp;view=reports", get_string('reports', 'tracker'));
@@ -227,18 +227,18 @@
 	    if ($result != -1){
 	        switch($screen){
 	            case 'mytickets': 
-	                $resolved = 1;
+	                $resolved = 0;
 	                include "views/viewmyticketslist.php";
 	                break;
 	            case 'mywork': 
-	                $resolved = 1;
+	                $resolved = 0;
 	                include "views/viewmyassignedticketslist.php";
 	                break;
 	            case 'browse': 
 	                if (!has_capability('mod/tracker:viewallissues', $context)){
 	                    print_error ('errornoaccessallissues', 'tracker');
 	                } else {
-	                    $resolved = 1;
+	                    $resolved = 0;
 	                    include "views/viewissuelist.php";
 	                } 
 	                break;
