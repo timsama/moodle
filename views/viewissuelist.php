@@ -15,7 +15,7 @@ if (!defined('MOODLE_INTERNAL')) {
 
 include_once $CFG->libdir.'/tablelib.php';
 
-$STATUSKEYS = array(PUBLISHED => get_string('published', 'tracker'), 
+$STATUSKEYS = array(PUBLISHED => get_string('published', 'tracker'),
                     RESOLVED => get_string('resolved', 'tracker'),
                     ABANDONNED => get_string('abandonned', 'tracker'));
 
@@ -82,7 +82,6 @@ if (isset($searchqueries)){
         WHERE
             i.reportedby = u.id AND
             i.trackerid = {$tracker->id}
-            $resolvedclause
         GROUP BY
             i.id,
             i.summary,
