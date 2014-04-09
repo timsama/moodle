@@ -15,9 +15,16 @@ if (!defined('MOODLE_INTERNAL')) {
 
 include_once $CFG->libdir.'/tablelib.php';
 
-$STATUSKEYS = array(PUBLISHED => get_string('published', 'tracker'),
-                    RESOLVED => get_string('resolved', 'tracker'),
-                    ABANDONNED => get_string('abandonned', 'tracker'));
+$STATUSKEYS = array(POSTED => get_string('posted', 'tracker'), 
+                    OPEN => get_string('open', 'tracker'), 
+                    RESOLVING => get_string('resolving', 'tracker'), 
+                    WAITING => get_string('waiting', 'tracker'), 
+                    TESTING => get_string('testing', 'tracker'), 
+                    VALIDATED => get_string('validated', 'tracker'), 
+                    PUBLISHED => get_string('published', 'tracker'), 
+                    RESOLVED => get_string('resolved', 'tracker'), 
+                    ABANDONNED => get_string('abandonned', 'tracker'),
+                    TRANSFERED => get_string('transfered', 'tracker'));
 
 /// get search engine related information
 // fields can come from a stored query,or from the current query in the user's client environement cookie
@@ -36,7 +43,7 @@ if ($page <= 0){
 }
 
 if (isset($searchqueries)){
-    /* SEARCH DEBUG
+    /* SEARCH DEBUG 
     $strsql = str_replace("\n", "<br/>", $searchqueries->count);
     $strsql = str_replace("\t", "&nbsp;&nbsp;&nbsp;", $strsql);
     echo "<div align=\"left\"> <b>count using :</b> ".$strsql." <br/>";
@@ -61,47 +68,48 @@ if (isset($searchqueries)){
     }
 
     $sql = "
-        SELECT
-            i.id,
-            i.summary,
-            i.datereported,
-            i.reportedby,
-            i.assignedto,
+        SELECT 
+            i.id, 
+            i.summary, 
+            i.datereported, 
+            i.reportedby, 
+            i.assignedto, 
             i.status,
             i.resolutionpriority,
-            u.firstname firstname,
+            u.firstname firstname, 
             u.lastname lastname,
             COUNT(ic.issueid) watches
-        FROM
+        FROM 
             {user} u,
             {tracker_issue} i
         LEFT JOIN
-            {tracker_issuecc} ic
+            {tracker_issuecc} ic 
         ON
             ic.issueid = i.id
-        WHERE
-            i.reportedby = u.id AND
+        WHERE 
+            i.reportedby = u.id AND 
             i.trackerid = {$tracker->id}
-        GROUP BY
-            i.id,
-            i.summary,
-            i.datereported,
-            i.reportedby,
-            i.assignedto,
+            $resolvedclause
+        GROUP BY 
+            i.id, 
+            i.summary, 
+            i.datereported, 
+            i.reportedby, 
+            i.assignedto, 
             i.status,
             i.resolutionpriority,
-            u.firstname,
+            u.firstname, 
             u.lastname
     ";
 
     $sqlcount = "
-        SELECT
+        SELECT 
             COUNT(*)
-        FROM
-            {tracker_issue} i,
+        FROM 
+            {tracker_issue} i, 
             {user} u
-        WHERE
-            i.reportedby = u.id AND
+        WHERE 
+            i.reportedby = u.id AND 
             i.trackerid = {$tracker->id}
             $resolvedclause
     ";
@@ -127,13 +135,13 @@ if (isset($searchqueries)){
     </tr>
 <?php
 }
-?>
+?>      
 </table>
 </center>
 <form name="manageform" action="view.php" method="post">
 <input type="hidden" name="id" value="<?php p($cm->id) ?>" />
 <input type="hidden" name="what" value="updatelist" />
-<?php
+<?php       
 
 /// define table object
 $prioritystr = get_string('priority', 'tracker');
@@ -252,7 +260,7 @@ if (!empty($issues)){
             $managersmenu[$USER->id] = fullname($USER);
             $assignedto = html_writer($developersmenu, "assignedto{$issue->id}", $issue->assignedto, array('' => get_string('unassigned', 'tracker')), array('onchange' => "document.forms['manageform'].changed{$issue->id}.value = 1;")) . "<input type=\"hidden\" name=\"changed{$issue->id}\" value=\"0\" />";
         } else {
-            $status = $STATUSKEYS[0 + $issue->status];
+            $status = $STATUSKEYS[0 + $issue->status]; 
             $assignedto = fullname($user);
         }
         $status = '<div class="status_'.$STATUSCODES[$issue->status].'" style="width: 110%; height: 105%; text-align:center">'.$status.'</div>';
@@ -299,7 +307,7 @@ if (!empty($issues)){
                 $dataset = array($maxpriority - $issue->resolutionpriority + 1, $issuenumber, $summary.' '.$solution, $datereported, $reportedby, $assignedto, $status, 0 + $issue->watches, $actions);
             }
         }
-        $table->add_data($dataset);
+        $table->add_data($dataset);     
     }
     $table->print_html();
     echo '<br/>';
@@ -307,11 +315,11 @@ if (!empty($issues)){
     if (!$resolved){
     	echo '<br/>';
     	echo '<br/>';
-        notice(get_string('noissuesreported', 'tracker'), "view.php?id=$cm->id");
+        notice(get_string('noissuesreported', 'tracker'), "view.php?id=$cm->id"); 
     } else {
     	echo '<br/>';
     	echo '<br/>';
-        notice(get_string('noissuesresolved', 'tracker'), "view.php?id=$cm->id");
+        notice(get_string('noissuesresolved', 'tracker'), "view.php?id=$cm->id"); 
     }
 }
 
