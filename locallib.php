@@ -1820,7 +1820,7 @@ function tracker_update_priority_stack(&$tracker){
            resolutionpriority = 0
        WHERE
            trackerid = $tracker->id AND
-           status IN (".RESOLVED.','.ABANDONNED.','.TRANSFERED.')';
+           status IN (".RESOLVED.','.ABANDONNED.')';
     $DB->execute($sql);
 
     /// fetch prioritarized by order
@@ -1854,15 +1854,9 @@ function tracker_get_stats(&$tracker, $from = null, $to = null){
 		}
 	} else {
 		$stats[POSTED] = 0;
-		$stats[OPEN] = 0;
-		$stats[RESOLVING] = 0;
-		$stats[WAITING] = 0;
-		$stats[TESTING] = 0;
-		$stats[PUBLISHED] = 0;
-		$stats[VALIDATED] = 0;
 		$stats[RESOLVED] = 0;
 		$stats[ABANDONNED] = 0;
-		$stats[TRANSFERED] = 0;
+		$stats[PUBLISHED] = 0;
 	}
 	
 	return $stats;
