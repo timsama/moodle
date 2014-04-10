@@ -35,7 +35,6 @@ $OUTPUT->box_start('center', '100%', '', '', 'generalbox', 'bugreport');
 			<?php 
 			echo get_string('sum_reported', 'tracker').': '.tracker_getnumissuesreported($tracker->id).'<br />'; 
 			echo get_string('sum_posted', 'tracker').': '.tracker_getnumissuesreported($tracker->id, POSTED).'<br />';
-			echo get_string('sum_opened', 'tracker').': '.tracker_getnumissuesreported($tracker->id, OPEN).'<br />';
 			echo get_string('sum_resolved', 'tracker').': '.tracker_getnumissuesreported($tracker->id, RESOLVED);
 			?>
 		</td>
