@@ -15,14 +15,8 @@ if (!defined('MOODLE_INTERNAL')) {
 
 echo $OUTPUT->heading(get_string('editwatch', 'tracker'));
 $OUTPUT->box_start('center', '100%', '', '', 'generalbox', 'bugreport');
-$open = ($form->events & EVENT_OPEN) ? 'checked="checked"' : '' ;
-$resolving = ($form->events & EVENT_RESOLVING) ? 'checked="checked"' : '' ;
-$waiting = ($form->events & EVENT_WAITING) ? 'checked="checked"' : '' ;
 $resolved = ($form->events & EVENT_RESOLVED) ? 'checked="checked"' : '' ;
 $abandonned = ($form->events & EVENT_ABANDONNED) ? 'checked="checked"' : '' ;
-$notopen = ($form->events & EVENT_OPEN) ? '' : 'checked="checked"' ;
-$notresolving = ($form->events & EVENT_RESOLVING) ? '' : 'checked="checked"';
-$notwaiting = ($form->events & EVENT_WAITING) ? '' : 'checked="checked"';
 $notresolved = ($form->events & EVENT_RESOLVED) ? '' : 'checked="checked"';
 $notabandonned = ($form->events & EVENT_ABANDONNED) ? '' : 'checked="checked"';
 ?>
@@ -41,27 +35,6 @@ $notabandonned = ($form->events & EVENT_ABANDONNED) ? '' : 'checked="checked"';
 		<td align="right"><b><?php print_string('issuename', 'tracker') ?>:</b></td>
 		<td colspan="3" align="left">
 		    <?php echo "$tracker->ticketprefix.$form->issueid - $form->summary" ?>
-		</td>
-	</tr>
-	<tr>
-	    <td valign="top" align="right"><b><?php print_string('setwhenopens', 'tracker') ?>:</b></td>
-		<td colspan="3" align="left">
-		    <input type="radio" name="open" value="1" <?php echo $open ?> /> <?php print_string('yes') ?> -
-		    <input type="radio" name="open" value="0" <?php echo $notopen ?> /> <?php print_string('no') ?>
-		</td>
-	</tr>
-	<tr>
-	    <td valign="top" align="right"><b><?php print_string('setwhenworks', 'tracker') ?>:</b></td>
-		<td colspan="3" align="left">
-		    <input type="radio" name="resolving" value="1" <?php echo $resolving ?> /> <?php print_string('yes') ?> -
-		    <input type="radio" name="resolving" value="0" <?php echo $notresolving ?> /> <?php print_string('no') ?>
-		</td>
-	</tr>
-	<tr>
-	    <td valign="top" align="right"><b><?php print_string('setwhenwaits', 'tracker') ?>:</b></td>
-		<td colspan="3" align="left">
-		    <input type="radio" name="waiting" value="1" <?php echo $waiting ?> /> <?php print_string('yes') ?> -
-		    <input type="radio" name="waiting" value="0" <?php echo $notwaiting ?> /> <?php print_string('no') ?>
 		</td>
 	</tr>
 	<tr>
