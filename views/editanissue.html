@@ -31,9 +31,9 @@ if (tracker_requiresfile($tracker->id)){
 <?php
 if (has_capability('mod/tracker:resolve', $context)){
     /// Opens the issue if I have capability to resolve
-    if ($issue->status < OPEN){
-        $issue->status = OPEN;
-        $DB->set_field('tracker_issue', 'status', OPEN, array('id' => $issueid));
+    if ($issue->status < POSTED){
+        $issue->status = POSTED;
+        $DB->set_field('tracker_issue', 'status', POSTED, array('id' => $issueid));
     }
 ?>
     <tr>

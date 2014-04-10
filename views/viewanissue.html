@@ -115,10 +115,10 @@ $showhistorylink = (!empty($history) || !empty($statehistory)) ? "<a id=\"toggle
 
 if (has_capability('mod/tracker:resolve', $context)){
     // If I can resolve and I have seen, the bug is open
-    if ($issue->status < OPEN){
+    if ($issue->status < POSTED){
     	$oldstatus = $issue->status;
-        $issue->status = OPEN;
-        $DB->set_field('tracker_issue', 'status', OPEN, array('id' => $issueid));
+        $issue->status = POSTED;
+        $DB->set_field('tracker_issue', 'status', POSTED, array('id' => $issueid));
 	    // log state change
 	    $stc = new StdClass;
 	    $stc->userid = $USER->id;
