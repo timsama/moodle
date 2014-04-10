@@ -25,30 +25,6 @@ tracker_loadpreferences($tracker->id, $USER->id);
 <input type="hidden" name="what" value="saveprefs" />
 <table border="1">
 	<tr>
-	    <td valign="top" align="right"><b><?php print_string('unsetwhenopens', 'tracker') ?></b></td>
-		<td colspan="3" align="left">
-		    <?php echo html_writer::select_yes_no('open', @$USER->trackerprefs->eventmask & EVENT_OPEN); ?>
-		</td>
-	</tr>
-	<tr>
-	    <td valign="top" align="right"><b><?php print_string('unsetwhenworks', 'tracker') ?></b></td>
-		<td colspan="3" align="left">
-		    <?php echo html_writer::select_yes_no('resolving', @$USER->trackerprefs->eventmask & EVENT_RESOLVING); ?>
-		</td>
-	</tr>
-	<tr>
-	    <td valign="top" align="right"><b><?php print_string('unsetwhenwaits', 'tracker') ?></b></td>
-		<td colspan="3" align="left">
-		    <?php echo html_writer::select_yes_no('waiting', @$USER->trackerprefs->eventmask & EVENT_WAITING); ?>
-		</td>
-	</tr>
-	<tr>
-	    <td valign="top" align="right"><b><?php print_string('unsetwhentesting', 'tracker') ?></b></td>
-		<td colspan="3" align="left">
-		    <?php echo html_writer::select_yes_no('testing', @$USER->trackerprefs->eventmask & EVENT_TESTING); ?>
-		</td>
-	</tr>
-	<tr>
 	    <td valign="top" align="right"><b><?php print_string('unsetwhenpublished', 'tracker') ?></b></td>
 		<td colspan="3" align="left">
 		    <?php echo html_writer::select_yes_no('published', @$USER->trackerprefs->eventmask & EVENT_PUBLISHED); ?>
