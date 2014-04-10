@@ -13,11 +13,11 @@
 	require_once("../../config.php");
 	require_once($CFG->dirroot."/mod/tracker/lib.php");
 	require_once($CFG->dirroot."/mod/tracker/locallib.php");
-
+	
 	// $usehtmleditor = false;
 	// $editorfields = '';
 
-	/// Check for required parameters - Course Module Id, trackerID,
+	/// Check for required parameters - Course Module Id, trackerID, 
 
 	$id = optional_param('id', 0, PARAM_INT); // Course Module ID, or
 	$a  = optional_param('a', 0, PARAM_INT);  // tracker ID
@@ -33,20 +33,20 @@
 	    if (! $cm = get_coursemodule_from_id('tracker', $id)) {
 	        print_error('errorcoursemodid', 'tracker');
 	    }
-
+		
 	    if (! $course = $DB->get_record('course', array('id' => $cm->course))) {
 	        print_error('errorcoursemisconfigured', 'tracker');
 	    }
-
+		
 	    if (! $tracker = $DB->get_record('tracker', array('id' => $cm->instance))) {
 	        print_error('errormoduleincorrect', 'tracker');
 	    }
 	} else {
-
+		
 	    if (! $tracker = $DB->get_record('tracker', array('id' => $a))) {
 	        print_error('errormoduleincorrect', 'tracker');
 	    }
-
+		
 	    if (! $course = $DB->get_record('course', array('id' => $tracker->course))) {
 	        print_error('errorcoursemisconfigured', 'tracker');
 	    }
@@ -57,30 +57,30 @@
 
 	// redirect (before outputting) traps
 	if ($view == "view" && (empty($screen) || $screen == 'viewanissue' || $screen == 'editanissue') && empty($issueid)){
-        redirect("view.php?id={$cm->id}&amp;view=view&amp;screen=browse");
+	        redirect("view.php?id={$cm->id}&amp;view=view&amp;screen=mytickets");
 	}
 
 	// implicit routing
 	if ($issueid){
 		$view = 'view';
-		if (empty($screen)) $screen = 'viewanissue';
+		if (empty($screen)) $screen = 'reportanissue';
 	}
 
 	$context = context_module::instance($cm->id);
 	require_login($course->id);
-
+	
 	add_to_log($course->id, 'tracker', "$view:$screen/$action", "view.php?id=$cm->id", "$tracker->id", $cm->id);
-
+	
 	$usehtmleditor = can_use_html_editor();
 	$defaultformat = FORMAT_MOODLE;
 	tracker_loadpreferences($tracker->id, $USER->id);
-
+	
 	/// Search controller - special implementation
 	// TODO : consider incorporing this controller back into standard MVC
 	if ($action == 'searchforissues'){
 	    $search = optional_param('search', null, PARAM_CLEANHTML);
 	    $saveasreport = optional_param('saveasreport', null, PARAM_CLEANHTML);
-
+	    
 	    if (!empty($search)){       //search for issues
 	        tracker_searchforissues($tracker, $cm->id);
 	    } elseif (!empty ($saveasreport)){        //save search as a report
@@ -94,7 +94,7 @@
 	        redirect("view.php?id={$cm->id}&amp;screen={$returnview}");
 	    }
 	}
-
+	
 	$strtrackers = get_string('modulenameplural', 'tracker');
 	$strtracker  = get_string('modulename', 'tracker');
 
@@ -146,7 +146,7 @@
 	if (has_capability('mod/tracker:configure', $context)){
 	    $rows[0][] = new tabobject('admin', "view.php?id={$cm->id}&amp;view=admin", get_string('administration', 'tracker'));
 	}
-
+	
 	/// submenus
 	$selected = null;
 	$activated = null;
@@ -158,8 +158,8 @@
 	    case 'view' :
 	        if (!preg_match("/mytickets|mywork|browse|search|viewanissue|editanissue/", $screen)) $screen = 'mytickets';
 	        $rows[1][] = new tabobject('mytickets', "view.php?id={$cm->id}&amp;view=view&amp;screen=mytickets", get_string('mytickets', 'tracker'));
-	        //$rows[1][] = new tabobject('mywork', "view.php?id={$cm->id}&amp;view=view&amp;screen=mywork", get_string('mywork', 'tracker'));
-	        if (has_capability('mod/tracker:viewallissues', $context) || $tracker->supportmode == 'bugtracker'){
+	        if (has_capability('mod/tracker:viewallissues', $context)){
+	            $rows[1][] = new tabobject('mywork', "view.php?id={$cm->id}&amp;view=view&amp;screen=mywork", get_string('mywork', 'tracker'));
 	            $rows[1][] = new tabobject('browse', "view.php?id={$cm->id}&amp;view=view&amp;screen=browse", get_string('browse', 'tracker'));
 	        }
 	        $rows[1][] = new tabobject('search', "view.php?id={$cm->id}&amp;view=view&amp;screen=search", get_string('search', 'tracker'));
@@ -167,8 +167,8 @@
 	    case 'resolved' :
 	        if (!preg_match("/mytickets|browse/", $screen)) $screen = 'mytickets';
 	        $rows[1][] = new tabobject('mytickets', "view.php?id={$cm->id}&amp;view=resolved&amp;screen=mytickets", get_string('mytickets', 'tracker'));
-	        $rows[1][] = new tabobject('mywork', "view.php?id={$cm->id}&amp;view=view&amp;screen=mywork", get_string('mywork', 'tracker'));
-	        if (has_capability('mod/tracker:viewallissues', $context) || $tracker->supportmode == 'bugtracker'){
+	        if (has_capability('mod/tracker:viewallissues', $context)){
+		    $rows[1][] = new tabobject('mywork', "view.php?id={$cm->id}&amp;view=view&amp;screen=mywork", get_string('mywork', 'tracker'));
 	            $rows[1][] = new tabobject('browse', "view.php?id={$cm->id}&amp;view=resolved&amp;screen=browse", get_string('browse', 'tracker'));
 	        }
 	    break;
@@ -226,23 +226,23 @@
 	    }
 	    if ($result != -1){
 	        switch($screen){
-	            case 'mytickets':
+	            case 'mytickets': 
 	                $resolved = 0;
 	                include "views/viewmyticketslist.php";
 	                break;
-	            case 'mywork':
+	            case 'mywork': 
 	                $resolved = 0;
 	                include "views/viewmyassignedticketslist.php";
 	                break;
-	            case 'browse':
+	            case 'browse': 
 	                if (!has_capability('mod/tracker:viewallissues', $context)){
 	                    print_error ('errornoaccessallissues', 'tracker');
 	                } else {
 	                    $resolved = 0;
 	                    include "views/viewissuelist.php";
-	                }
+	                } 
 	                break;
-	            case 'search':
+	            case 'search': 
 	                include "views/searchform.html";
 	                break;
 	            case 'viewanissue' :
@@ -257,7 +257,7 @@
                     if (!has_capability('mod/tracker:manage', $context)){
                         print_error('errornoaccessissue', 'tracker');
                     } else {
-                        include "views/editanissue.html";
+                        include "views/editanissue.html";   
                     }
 	                break;
 	        }
@@ -269,17 +269,17 @@
 	    }
 	    if ($result != -1){
 	        switch($screen){
-	            case 'mytickets':
+	            case 'mytickets': 
 	                $resolved = 1;
 	                include "views/viewmyticketslist.php";
 	                break;
-	            case 'browse':
+	            case 'browse': 
 	                if (!has_capability('mod/tracker:viewallissues', $context)){
 	                    print_error('errornoaccessallissues', 'tracker');
 	                } else {
 	                    $resolved = 1;
 	                    include "views/viewissuelist.php";
-	                }
+	                } 
 	                break;
 	        }
 	    }
@@ -287,13 +287,13 @@
 	    $result = 0;
 	    if ($result != -1){
 	        switch($screen){
-	            case 'status':
-	                include "report/status.html";
+	            case 'status': 
+	                include "report/status.html"; 
 	                break;
-	            case 'evolution':
+	            case 'evolution': 
 	                include "report/evolution.html";
 	                break;
-	            case 'print':
+	            case 'print': 
 	                include "report/print.html";
 	                break;
 	        }
@@ -305,13 +305,13 @@
 	    }
 	    if ($result != -1){
 	        switch($screen){
-	            case 'summary':
-	                include "views/admin_summary.html";
+	            case 'summary': 
+	                include "views/admin_summary.html"; 
 	                break;
-	            case 'manageelements':
+	            case 'manageelements': 
 	                include "views/admin_manageelements.html";
 	                break;
-	            case 'managenetwork':
+	            case 'managenetwork': 
 	                include "views/admin_mnetwork.html";
 	                break;
 	        }
