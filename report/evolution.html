@@ -76,97 +76,6 @@ if (!$alltickets){
 				?>
 			</tr>
 			<tr valign="top">
-				<td width="40%" align="left" class="status_open"><?php echo $STATUSKEYS[OPEN] ?></td>
-				<?php
-				$dateiter->reset();
-				$current = $dateiter->current();
-				while (strcmp($current, $highest) <= 0){
-				?>
-				<td align="right" width="<?php echo $colwidth ?>%">
-					<?php 
-					$new = 0 + @$ticketsbymonth[$current][OPEN];
-					$valueclass = ($new == 0) ? 'nullclass' : '' ;
-					echo "<span class=\"$valueclass\">$new</span>";
-					?>
-				</td>
-				<?php
-					$dateiter->next();
-					$current = $dateiter->current();
-				}
-				?>
-			</tr>
-			<tr valign="top">
-				<td width="40%" align="left" class="status_resolving">
-					<?php 
-					$new = $STATUSKEYS[RESOLVING];
-					$valueclass = ($new == 0) ? 'nullclass' : '' ;
-					echo "<span class=\"$valueclass\">$new</span>";
-					?>
-				</td>
-				<?php
-				$dateiter->reset();
-				$current = $dateiter->current();
-				while (strcmp($current, $highest) <= 0){
-				?>
-				<td align="right" width="<?php echo $colwidth ?>%">
-					<?php 
-					$new = 0 + @$ticketsbymonth[$current][RESOLVING];
-					$valueclass = ($new == 0) ? 'nullclass' : '' ;
-					echo "<span class=\"$valueclass\">$new</span>";
-					?>
-				</td>
-				<?php
-					$dateiter->next();
-					$current = $dateiter->current();
-				}
-				?>
-			</tr>
-			<tr valign="top">
-				<td width="40%" align="left" class="status_waiting"><?php echo $STATUSKEYS[WAITING] ?></td>
-				<?php
-				$dateiter->reset();
-				$current = $dateiter->current();
-				$last = 0;
-				while (strcmp($current, $highest) <= 0){
-				?>
-				<td align="right" width="<?php echo $colwidth ?>%">
-					<?php 
-					$new = 0 + @$ticketsbymonth[$current][WAITING];
-					$diff = $new - $last;
-					$valueclass = ($new == 0) ? 'nullclass' : '' ;
-					echo "<span class=\"$valueclass\">$new</span>";
-					echo ' ';
-					echo ($diff > 0) ? "<span class=\"red\">(+$diff)</span>" : '' ;
-					$last = $new;
-					?>
-				</td>
-				<?php
-					$dateiter->next();
-					$current = $dateiter->current();
-				}
-				?>
-			</tr>
-			<tr valign="top">
-				<td width="40%" align="left" class="status_testing"><?php echo $STATUSKEYS[TESTING] ?></td>
-				<?php
-				$dateiter->reset();
-				$current = $dateiter->current();
-				while (strcmp($current, $highest) <= 0){
-				?>
-				<td align="right" width="<?php echo $colwidth ?>%">
-					<?php 
-					$new = 0 + @$ticketsbymonth[$current][TESTING];
-					$valueclass = ($new == 0) ? 'nullclass' : '' ;
-					echo "<span class=\"$valueclass\">$new</span>";
-					?>
-				</td>
-				<?php
-					$dateiter->next();
-					$current = $dateiter->current();
-				}
-				?>
-			</tr>
-			<tr valign="top">
 				<td width="40%" align="left" class="status_published"><?php echo $STATUSKEYS[PUBLISHED] ?></td>
 				<?php
 				$dateiter->reset();
@@ -222,26 +131,6 @@ if (!$alltickets){
 				<td align="right" width="<?php echo $colwidth ?>%">
 					<?php 
 					$new = 0 + @$ticketsbymonth[$current][ABANDONNED];
-					$valueclass = ($new == 0) ? 'nullclass' : '' ;
-					echo "<span class=\"$valueclass\">$new</span>";
-					?>
-				</td>
-				<?php
-					$dateiter->next();
-					$current = $dateiter->current();
-				}
-				?>
-			</tr>
-			<tr valign="top">
-				<td width="40%" align="left" class="status_transfered"><?php echo $STATUSKEYS[TRANSFERED] ?></td>
-				<?php
-				$dateiter->reset();
-				$current = $dateiter->current();
-				while (strcmp($current, $highest) <= 0){
-				?>
-				<td align="right" width="<?php echo $colwidth ?>%">
-					<?php 
-					$new = 0 + @$ticketsbymonth[$current][TRANSFERED];
 					$valueclass = ($new == 0) ? 'nullclass' : '' ;
 					echo "<span class=\"$valueclass\">$new</span>";
 					?>
@@ -324,97 +213,6 @@ if (!$alltickets){
 			?>
 		</tr>
 		<tr valign="top">
-			<td width="40%" align="left" class="status_open"><?php echo $STATUSKEYS[OPEN] ?></td>
-			<?php
-			$dateiter->reset();
-			$current = $dateiter->current();
-			while (strcmp($current, $highest) <= 0){
-			?>
-			<td align="right" width="<?php echo $colwidth ?>%">
-				<?php 
-				$new = 0 + @$ticketsprogressbymonth[$current][OPEN];
-				$valueclass = ($new == 0) ? 'nullclass' : '' ;
-				echo "<span class=\"$valueclass\">$new</span>";
-				?>
-			</td>
-			<?php
-				$dateiter->next();
-				$current = $dateiter->current();
-			}
-			?>
-		</tr>
-		<tr valign="top">
-			<td width="40%" align="left" class="status_resolving">
-				<?php 
-				$new = $STATUSKEYS[RESOLVING];
-				$valueclass = ($new == 0) ? 'nullclass' : '' ;
-				echo "<span class=\"$valueclass\">$new</span>";
-				?>
-			</td>
-			<?php
-			$dateiter->reset();
-			$current = $dateiter->current();
-			while (strcmp($current, $highest) <= 0){
-			?>
-			<td align="right" width="<?php echo $colwidth ?>%">
-				<?php 
-				$new = 0 + @$ticketsprogressbymonth[$current][RESOLVING];
-				$valueclass = ($new == 0) ? 'nullclass' : '' ;
-				echo "<span class=\"$valueclass\">$new</span>";
-				?>
-			</td>
-			<?php
-				$dateiter->next();
-				$current = $dateiter->current();
-			}
-			?>
-		</tr>
-		<tr valign="top">
-			<td width="40%" align="left" class="status_waiting"><?php echo $STATUSKEYS[WAITING] ?></td>
-			<?php
-			$dateiter->reset();
-			$current = $dateiter->current();
-			$last = 0;
-			while (strcmp($current, $highest) <= 0){
-			?>
-			<td align="right" width="<?php echo $colwidth ?>%">
-				<?php 
-				$new = 0 + @$ticketsprogressbymonth[$current][WAITING];
-				$diff = $new - $last;
-				$valueclass = ($new == 0) ? 'nullclass' : '' ;
-				echo "<span class=\"$valueclass\">$new</span>";
-				echo ' ';
-				echo ($diff > 0) ? "<span class=\"red\">(+$diff)</span>" : '' ;
-				$last = $new;
-				?>
-			</td>
-			<?php
-				$dateiter->next();
-				$current = $dateiter->current();
-			}
-			?>
-		</tr>
-		<tr valign="top">
-			<td width="40%" align="left" class="status_testing"><?php echo $STATUSKEYS[TESTING] ?></td>
-			<?php
-			$dateiter->reset();
-			$current = $dateiter->current();
-			while (strcmp($current, $highest) <= 0){
-			?>
-			<td align="right" width="<?php echo $colwidth ?>%">
-				<?php 
-				$new = 0 + @$ticketsprogressbymonth[$current][TESTING];
-				$valueclass = ($new == 0) ? 'nullclass' : '' ;
-				echo "<span class=\"$valueclass\">$new</span>";
-				?>
-			</td>
-			<?php
-				$dateiter->next();
-				$current = $dateiter->current();
-			}
-			?>
-		</tr>
-		<tr valign="top">
 			<td width="40%" align="left" class="status_published"><?php echo $STATUSKEYS[PUBLISHED] ?></td>
 			<?php
 			$dateiter->reset();
@@ -470,26 +268,6 @@ if (!$alltickets){
 			<td align="right" width="<?php echo $colwidth ?>%">
 				<?php 
 				$new = 0 + @$ticketsprogressbymonth[$current][ABANDONNED];
-				$valueclass = ($new == 0) ? 'nullclass' : '' ;
-				echo "<span class=\"$valueclass\">$new</span>";
-				?>
-			</td>
-			<?php
-				$dateiter->next();
-				$current = $dateiter->current();
-			}
-			?>
-		</tr>
-		<tr valign="top">
-			<td width="40%" align="left" class="status_transfered"><?php echo $STATUSKEYS[TRANSFERED] ?></td>
-			<?php
-			$dateiter->reset();
-			$current = $dateiter->current();
-			while (strcmp($current, $highest) <= 0){
-			?>
-			<td align="right" width="<?php echo $colwidth ?>%">
-				<?php 
-				$new = 0 + @$ticketsprogressbymonth[$current][TRANSFERED];
 				$valueclass = ($new == 0) ? 'nullclass' : '' ;
 				echo "<span class=\"$valueclass\">$new</span>";
 				?>

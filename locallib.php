@@ -1967,7 +1967,7 @@ function tracker_backtrack_stats_by_month(&$tracker){
 				if ($state == -1) continue;
 				$stats[$current][$state] = @$stats[$current][$state] + 1;
 				$stats[$current]['sum'] = @$stats[$current]['sum'] + 1;
-				if ($state != RESOLVED && $state != ABANDONNED && $state != TRANSFERED)
+				if ($state != RESOLVED && $state != ABANDONNED)
 					$stats[$current]['sumunres'] = @$stats[$current]['sumunres'] + 1;
 			}
 		}
