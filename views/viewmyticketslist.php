@@ -16,9 +16,9 @@ if (!defined('MOODLE_INTERNAL')) {
 
 include_once $CFG->libdir.'/tablelib.php';
 
-$STATUSKEYS = array(POSTED => get_string('posted', 'tracker'), 
-                    RESOLVED => get_string('resolved', 'tracker'), 
-                    PUBLISHED => get_string('published', 'tracker'), 
+$STATUSKEYS = array(POSTED => get_string('posted', 'tracker'),
+                    RESOLVED => get_string('resolved', 'tracker'),
+                    PUBLISHED => get_string('published', 'tracker'),
                     ABANDONNED => get_string('abandonned', 'tracker'));
 
 /// get search engine related information
@@ -49,18 +49,6 @@ if (isset($searchqueries)){
     $sql = $searchqueries->search;
     $numrecords = $DB->count_records_sql($searchqueries->count);
 } else {
-    if ($resolved){
-        $resolvedclause = " AND
-           (status = ".RESOLVED." OR
-           status = ".ABANDONNED.")
-        ";
-    } else {
-        $resolvedclause = " AND
-           status <> ".RESOLVED." AND
-           status <> ".ABANDONNED."
-        ";
-    }
-
     $sql = "
         SELECT
             i.id,
@@ -96,7 +84,6 @@ if (isset($searchqueries)){
         WHERE
             i.reportedby = {$USER->id} AND
             i.trackerid = {$tracker->id}
-            $resolvedclause
     ";
     $numrecords = $DB->count_records_sql($sqlcount);
 }
@@ -138,7 +125,7 @@ $actionstr = '';
 
 if(!empty($tracker->parent)){
     $transferstr = get_string('transfer', 'tracker');
-    if (has_capability('mod/tracker:viewpriority', $context) && !$resolved){
+    if (has_capability('mod/tracker:viewpriority', $context)){
         $tablecolumns = array('resolutionpriority', 'id', 'summary', 'datereported', 'assignedto', 'status', 'watches', 'transfered', 'action');
         $tableheaders = array("<b>$prioritystr</b>", "<b>$issuenumberstr</b>", "<b>$summarystr</b>", "<b>$datereportedstr</b>", "<b>$assignedtostr</b>", "<b>$statusstr</b>", "<b>$watchesstr</b>", "<b>$transferstr</b>", "<b>$actionstr</b>");
     } else {
@@ -146,7 +133,7 @@ if(!empty($tracker->parent)){
         $tableheaders = array("<b>$issuenumberstr</b>", "<b>$summarystr</b>", "<b>$datereportedstr</b>", "<b>$assignedtostr</b>", "<b>$statusstr</b>", "<b>$watchesstr</b>", "<b>$transferstr</b>", "<b>$actionstr</b>");
     }
 } else {
-    if (has_capability('mod/tracker:viewpriority', $context) && !$resolved){
+    if (has_capability('mod/tracker:viewpriority', $context)) {
         $tablecolumns = array('resolutionpriority', 'id', 'summary', 'datereported', 'assignedto', 'status', 'watches',  'action');
         $tableheaders = array("<b>$prioritystr</b>", '', "<b>$summarystr</b>", "<b>$datereportedstr</b>", "<b>$assignedtostr</b>", "<b>$statusstr</b>", "<b>$watchesstr</b>", "<b>$actionstr</b>");
     } else {
@@ -256,14 +243,14 @@ if (!empty($issues)){
         }
         if (!empty($tracker->parent)){
             $transfer = ($issue->status == TRANSFERED) ? tracker_print_transfer_link($tracker, $issue) : '' ;
-            if (has_capability('mod/tracker:viewpriority', $context) && !$resolved){
+            if (has_capability('mod/tracker:viewpriority', $context)){
                 $ticketpriority = ($issue->status < RESOLVED) ? $maxpriority - $issue->resolutionpriority + 1 : '' ;
                 $dataset = array($ticketpriority, $issuenumber, $summary.' '.$solution, $datereported, $assignedto, $status, 0 + $issue->watches, $transfer, $actions);
             } else {
                 $dataset = array($issuenumber, $summary.' '.$solution, $datereported, $assignedto, $status, 0 + $issue->watches, $transfer, $actions);
             }
         } else {
-            if (has_capability('mod/tracker:viewpriority', $context) && !$resolved){
+            if (has_capability('mod/tracker:viewpriority', $context)){
                 $ticketpriority = ($issue->status < RESOLVED) ? $maxpriority - $issue->resolutionpriority + 1 : '' ;
                 $dataset = array($ticketpriority, $issuenumber, $summary.' '.$solution, $datereported, $assignedto, $status, 0 + $issue->watches, $actions);
             } else {

@@ -15,9 +15,9 @@ if (!defined('MOODLE_INTERNAL')) {
 
 include_once $CFG->libdir.'/tablelib.php';
 
-$STATUSKEYS = array(POSTED => get_string('posted', 'tracker'), 
-                    RESOLVED => get_string('resolved', 'tracker'), 
-                    PUBLISHED => get_string('published', 'tracker'), 
+$STATUSKEYS = array(POSTED => get_string('posted', 'tracker'),
+                    RESOLVED => get_string('resolved', 'tracker'),
+                    PUBLISHED => get_string('published', 'tracker'),
                     ABANDONNED => get_string('abandonned', 'tracker'));
 
 /// get search engine related information
@@ -48,18 +48,6 @@ if (isset($searchqueries)){
     $sql = $searchqueries->search;
     $numrecords = $DB->count_records_sql($searchqueries->count);
 } else {
-    // check we display only resolved tickets or working
-    if ($resolved){
-        $resolvedclause = " AND
-           (status = ".RESOLVED." OR
-           status = ".ABANDONNED.")
-        ";
-    } else {
-        $resolvedclause = " AND
-           status <> ".RESOLVED." AND
-           status <> ".ABANDONNED."
-        ";
-    }
 
     $sql = "
         SELECT
@@ -104,7 +92,6 @@ if (isset($searchqueries)){
         WHERE
             i.reportedby = u.id AND
             i.trackerid = {$tracker->id}
-            $resolvedclause
     ";
     $numrecords = $DB->count_records_sql($sqlcount);
 }
@@ -146,25 +133,16 @@ $assignedtostr = get_string('assignedto', 'tracker');
 $statusstr = get_string('status', 'tracker');
 $watchesstr = get_string('watches', 'tracker');
 $actionstr = '';
-if ($resolved){
-    if(!empty($tracker->parent)){
-        $transferstr = get_string('transfer', 'tracker');
-        $tablecolumns = array('id', 'summary', 'datereported', 'reportedby', 'assignedto', 'status', 'watches', 'transfered', 'action');
-        $tableheaders = array("<b>$issuenumberstr</b>", "<b>$summarystr</b>", "<b>$datereportedstr</b>", "<b>$reportedbystr</b>", "<b>$assignedtostr</b>", "<b>$statusstr</b>", "<b>$watchesstr</b>", "<b>$transferstr</b>", "<b>$actionstr</b>");
-    } else {
-        $tablecolumns = array('id', 'summary', 'datereported', 'reportedby', 'assignedto', 'status', 'watches', 'action');
-        $tableheaders = array("<b>$issuenumberstr</b>", "<b>$summarystr</b>", "<b>$datereportedstr</b>", "<b>$reportedbystr</b>", "<b>$assignedtostr</b>", "<b>$statusstr</b>", "<b>$watchesstr</b>", "<b>$actionstr</b>");
-    }
+
+if(!empty($tracker->parent)){
+    $transferstr = get_string('transfer', 'tracker');
+    $tablecolumns = array('resolutionpriority', 'id', 'summary', 'datereported', 'reportedby', 'assignedto', 'status', 'watches', 'transfered', 'action');
+    $tableheaders = array("<b>$prioritystr</b>", "<b>$issuenumberstr</b>", "<b>$summarystr</b>", "<b>$datereportedstr</b>", "<b>$reportedbystr</b>", "<b>$assignedtostr</b>", "<b>$statusstr</b>", "<b>$watchesstr</b>", "<b>$transferstr</b>", "<b>$actionstr</b>");
 } else {
-    if(!empty($tracker->parent)){
-        $transferstr = get_string('transfer', 'tracker');
-        $tablecolumns = array('resolutionpriority', 'id', 'summary', 'datereported', 'reportedby', 'assignedto', 'status', 'watches', 'transfered', 'action');
-        $tableheaders = array("<b>$prioritystr</b>", "<b>$issuenumberstr</b>", "<b>$summarystr</b>", "<b>$datereportedstr</b>", "<b>$reportedbystr</b>", "<b>$assignedtostr</b>", "<b>$statusstr</b>", "<b>$watchesstr</b>", "<b>$transferstr</b>", "<b>$actionstr</b>");
-    } else {
-        $tablecolumns = array('resolutionpriority', 'id', 'summary', 'datereported', 'reportedby', 'assignedto', 'status', 'watches', 'action');
-        $tableheaders = array("<b>$prioritystr</b>", "<b>$issuenumberstr</b>", "<b>$summarystr</b>", "<b>$datereportedstr</b>", "<b>$reportedbystr</b>", "<b>$assignedtostr</b>", "<b>$statusstr</b>", "<b>$watchesstr</b>", "<b>$actionstr</b>");
-    }
+    $tablecolumns = array('resolutionpriority', 'id', 'summary', 'datereported', 'reportedby', 'assignedto', 'status', 'watches', 'action');
+    $tableheaders = array("<b>$prioritystr</b>", "<b>$issuenumberstr</b>", "<b>$summarystr</b>", "<b>$datereportedstr</b>", "<b>$reportedbystr</b>", "<b>$assignedtostr</b>", "<b>$statusstr</b>", "<b>$watchesstr</b>", "<b>$actionstr</b>");
 }
+
 
 $table = new flexible_table('mod-tracker-issuelist');
 $table->define_columns($tablecolumns);
@@ -285,35 +263,20 @@ if (!empty($issues)){
                 $actions .= "&nbsp;<img src=\"".$OUTPUT->pix_url('tobottom_shadow', 'mod_tracker')."\" border=\"0\" />";
             }
         }
-        if ($resolved){
-            if (!empty($tracker->parent)) {
-                $transfer = ($issue->status == TRANSFERED) ? tracker_print_transfer_link($tracker, $issue) : '' ;
-                $dataset = array($issuenumber, $summary.' '.$solution, $datereported, $reportedby, $assignedto, $status, 0 + $issue->watches, $transfer, $actions);
-            } else {
-                $dataset = array($issuenumber, $summary.' '.$solution, $datereported, $reportedby, $assignedto, $status, 0 + $issue->watches, $actions);
-            }
+        if (!empty($tracker->parent)) {
+            $transfer = ($issue->status == TRANSFERED) ? tracker_print_transfer_link($tracker, $issue) : '' ;
+            $dataset = array($maxpriority - $issue->resolutionpriority + 1, $issuenumber, $summary.' '.$solution, $datereported, $reportedby, $assignedto, $status, 0 + $issue->watches, $transfer, $actions);
         } else {
-            if (!empty($tracker->parent)) {
-                $transfer = ($issue->status == TRANSFERED) ? tracker_print_transfer_link($tracker, $issue) : '' ;
-                $dataset = array($maxpriority - $issue->resolutionpriority + 1, $issuenumber, $summary.' '.$solution, $datereported, $reportedby, $assignedto, $status, 0 + $issue->watches, $transfer, $actions);
-            } else {
-                $dataset = array($maxpriority - $issue->resolutionpriority + 1, $issuenumber, $summary.' '.$solution, $datereported, $reportedby, $assignedto, $status, 0 + $issue->watches, $actions);
-            }
+            $dataset = array($maxpriority - $issue->resolutionpriority + 1, $issuenumber, $summary.' '.$solution, $datereported, $reportedby, $assignedto, $status, 0 + $issue->watches, $actions);
         }
         $table->add_data($dataset);
     }
     $table->print_html();
     echo '<br/>';
 } else {
-    if (!$resolved){
-    	echo '<br/>';
-    	echo '<br/>';
-        notice(get_string('noissuesreported', 'tracker'), "view.php?id=$cm->id");
-    } else {
-    	echo '<br/>';
-    	echo '<br/>';
-        notice(get_string('noissuesresolved', 'tracker'), "view.php?id=$cm->id");
-    }
+	echo '<br/>';
+	echo '<br/>';
+    notice(get_string('noissuesresolved', 'tracker'), "view.php?id=$cm->id");
 }
 
 if (has_capability('mod/tracker:manage', $context) || has_capability('mod/tracker:resolve', $context)){

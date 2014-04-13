@@ -17,9 +17,9 @@ if (!defined('MOODLE_INTERNAL')) {
 
 include_once $CFG->libdir.'/tablelib.php';
 
-$STATUSKEYS = array(POSTED => get_string('posted', 'tracker'), 
-                    RESOLVED => get_string('resolved', 'tracker'), 
-                    PUBLISHED => get_string('published', 'tracker'), 
+$STATUSKEYS = array(POSTED => get_string('posted', 'tracker'),
+                    RESOLVED => get_string('resolved', 'tracker'),
+                    PUBLISHED => get_string('published', 'tracker'),
                     ABANDONNED => get_string('abandonned', 'tracker'));
 
 /// get search engine related information
@@ -52,18 +52,6 @@ if (isset($searchqueries)){
     $numrecords = $DB->count_records_sql($searchqueries->count);
 } else {
 	$singletrackerclause = (empty($alltracks)) ? " AND i.trackerid = {$tracker->id} " : '' ;
-
-    if ($resolved){
-        $resolvedclause = " AND
-           (status = ".RESOLVED." OR
-           status = ".ABANDONNED.")
-        ";
-    } else {
-        $resolvedclause = " AND
-           status <> ".RESOLVED." AND
-           status <> ".ABANDONNED."
-        ";
-    }
 
     $sql = "
         SELECT
@@ -106,7 +94,6 @@ if (isset($searchqueries)){
         WHERE
             i.assignedto = ?
             {$singletrackerclause}
-            $resolvedclause
     ";
     $numrecords = $DB->count_records_sql($sqlcount, array($USER->id));
 }
