@@ -52,10 +52,9 @@ if ($action == 'submitanissue'){
     // notify all admins
     if ($tracker->allownotifications){
         tracker_notify_submission($issue, $cm, $tracker);
-        #if ($issue->assignedto){
-        #    tracker_notifyccs_changeownership($issue->id, $tracker);
-        #}
-	# commenting these lines should help stop ownership change email notifications
+        if ($issue->assignedto){
+            tracker_notifyccs_changeownership($issue->id, $tracker);
+        }
     }
     return -1;
 }

@@ -4,4 +4,4 @@
 <p><%%COMMENT%%></p>
 <hr/>
 <p><a href="<%%ISSUEURL%%>">See the ticket</a><br/>
-<a href="<%%UNCCURL%%>">Se désabonner du défaut</a><br/>
+<a href="<%%UNCCURL%%>">Unregister from ticket</a><br/>

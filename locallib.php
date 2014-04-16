@@ -1442,6 +1442,7 @@ function tracker_notify_raiserequest($issue, &$cm, $reason, $urgent, $tracker = 
 
 /**
 * sends required notifications by the watchers when first submit
+* NOTE: sends emails to $managers
 * @uses $COURSE
 * @param object $issue
 * @param object $cm
@@ -1470,9 +1471,17 @@ function tracker_notify_submission($issue, &$cm, $tracker = null){
                       );
         include_once($CFG->dirroot."/mod/tracker/mailtemplatelib.php");
         foreach($managers as $manager){
+		
+			# Create notification in "plain text format" (as described in the profile settings page).
             $notification = tracker_compile_mail_template('submission', $vars, 'tracker', $manager->lang);
+			
+			# Create notification in "pretty HTML format" (as described in the profile settings page).
             $notification_html = tracker_compile_mail_template('submission_html', $vars, 'tracker', $manager->lang);
+			
+			# Create log for debugging...?
             if ($CFG->debugsmtp) echo "Sending Submission Mail Notification to " . fullname($manager) . '<br/>'.$notification_html;
+			
+			# Send email.
             email_to_user($manager, $USER, get_string('submission', 'tracker', $SITE->shortname.':'.format_string($tracker->name)), $notification, $notification_html);
         }
     }
